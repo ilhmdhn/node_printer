@@ -1,0 +1,40 @@
+{
+  "name": "thermal_printer_service",
+  "version": "1.0.0",
+  "description": "Thermal Printer Service",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "build": "electron-builder --ia32",
+    "portable": "electron-builder --win=portable"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilhmdhn/node_printer.git"
+  },
+  "keywords": [
+    "nodejs",
+    "thermal",
+    "printer",
+    "ilhmdhn"
+  ],
+  "author": "ilhmdhn",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ilhmdhn/node_printer/issues"
+  },
+  "homepage": "https://github.com/ilhmdhn/node_printer#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "escpos": "^3.0.0-alpha.6",
+    "escpos-usb": "^3.0.0-alpha.4",
+    "mssql": "^9.1.1",
+    "usb": "^1.9.2"
+  },
+  "devDependencies": {
+    "electron": "^23.1.1",
+    "electron-builder": "^23.6.0"
+  }
+}
