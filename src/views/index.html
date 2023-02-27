@@ -181,9 +181,12 @@
 
 <body>
   <div class="box">
-    <div style="display: flex; float: left; margin-top: -2em;"><p id="errorMessage" style="color: crimson; text-align: center;">TEST</p></div>
-    <div id="dotIndicator" style="float: right; background-color: orange; width: 13px; height: 13px; border-radius: 50%; margin-right: -1.5em; margin-top: -1.5em;">
-      
+    <div style="display: flex; float: left; margin-top: -2em;">
+      <p id="errorMessage" style="color: crimson; text-align: center;">TEST</p>
+    </div>
+    <div id="dotIndicator"
+      style="float: right; background-color: orange; width: 13px; height: 13px; border-radius: 50%; margin-right: -1.5em; margin-top: -1.5em;">
+
     </div>
     <h2>Thermal Printer service</h2>
     <div class="user-box">
@@ -230,22 +233,21 @@
     textPort.value = data.port;
   })
 
-  ipcRenderer.on('CONNECTION-PRINTER', (event, data)=>{
+  ipcRenderer.on('CONNECTION-PRINTER', (event, data) => {
     const dotIndicator = document.getElementById('dotIndicator');
     const textConnection = document.getElementById('errorMessage');
-    if(data.state){
+    if (data.state) {
       dotIndicator.style.backgroundColor = 'green'
       textConnection.innerHTML = data.message
       textConnection.style.color = 'white'
-    }else{
+    } else {
       textConnection.style.color = 'red'
       dotIndicator.style.backgroundColor = 'crimson'
       textConnection.innerHTML = data.message
     }
-    setTimeout(()=> {
-  //your code to be executed after 1 second
-  textConnection.style.display = 'none';
-}, 2009)
+    setTimeout(() => {
+      textConnection.style.display = 'none';
+    }, 2009)
   });
 
   const testPrint = () => {
@@ -253,7 +255,7 @@
   }
 
 
-  ipcRenderer.on('RESULT-TEST-PRINT', async(event, data) => {
+  ipcRenderer.on('RESULT-TEST-PRINT', async (event, data) => {
     document.getElementById('resultBox').style.display = 'flex';
     if (data.state) {
       document.getElementById('resultBox').style.backgroundColor = '#4BB543';
@@ -262,9 +264,8 @@
       document.getElementById('resultBox').style.backgroundColor = '#D0342C';
       document.getElementById('result').innerHTML = data.message
     }
-    setTimeout(()=> {
-  //your code to be executed after 1 second
-  document.getElementById('resultBox').style.display = 'none';
-}, 2009);
+    setTimeout(() => {
+      document.getElementById('resultBox').style.display = 'none';
+    }, 2009);
   });
 </script>
