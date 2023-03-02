@@ -34,13 +34,13 @@ const registerPrinter = (dataPrinter) => {
         try {
             const query = `
             BEGIN TRAN
-            UPDATE IHP_Printer_address with (serializable) SET
-               [ip_address] = '${dataPrinter.ipAddress}',
-               [port] = '${dataPrinter.port}'
-            WHERE [printer_name] = '${dataPrinter.name}'
+            UPDATE IHP_IPAddress with (serializable) SET
+               [IP_Address] = '${dataPrinter.ipAddress}',
+               [Server_Udp_Port] = '${dataPrinter.port}'
+            WHERE [Aplikasi] = '${dataPrinter.name}'
            IF @@rowcount = 0
            BEGIN
-                INSERT INTO IHP_Printer_address([printer_name] ,[ip_address],[port])
+                INSERT INTO IHP_IPAddress([Aplikasi] ,[IP_Address],[Server_Udp_Port])
                 VALUES (
                     '${dataPrinter.name}',
                     '${dataPrinter.ipAddress}',

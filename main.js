@@ -1,10 +1,11 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain} = require('electron');
+const dgram = require('node:dgram');
 const {testPrint} = require('./src/controller/printer-controller')
 const identity = require('./src/tools/printer-initial');
 const {createPrinterAddressTable, registerPrinter} = require('./src/tools/add-table');
 
 const createWindow = () => {
-
+    const server = dgram.createSocket('udp4');
     const win = new BrowserWindow({
         width: 480,
         height: 510,
@@ -26,6 +27,7 @@ const createWindow = () => {
         app.quit();
         return;
     }
+
     win.focus();
     win.center();
     win.on('closed', (event) => {
@@ -66,17 +68,18 @@ const createWindow = () => {
     tray.setContextMenu(contextMenu);
     win.loadFile(__dirname+'/src/views/index.html');
 
+    const showPrintRequest = (printnya)=>{
+        win.webContents.send('RESULT-PRINT', printnya);
+    }
+
     ipcMain.on('SUBMIT-TEST-PRINT', (event, msg)=>{
-        win.webContents.send('RESULT-TEST-PRINT', 
-        testPrint()
-        );
+        showPrintRequest(testPrint())
     });
 
     win.webContents.on('did-finish-load', async() => {
-
         try{
             const printerIdentity = await identity()
-            await createPrinterAddressTable();
+            // await createPrinterAddressTable();
             await registerPrinter(printerIdentity);
             win.webContents.send('CONNECTION-PRINTER', 
             {
@@ -102,6 +105,22 @@ const createWindow = () => {
             }
         );
     });
+
+    server.on('error', (err) => {
+        win.webContents.send('CONNECTION-PRINTER', 
+        {
+            state: false,
+            message: 'Error '+err
+        }
+        );
+        server.close();
+      });
+
+    server.on('thermal-print', (msg, sender)=>{
+        console.log(sender)
+    });
+
+    server.bind(3456);
 }
 
 app.whenReady().then(() => {

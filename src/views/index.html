@@ -255,7 +255,7 @@
   }
 
 
-  ipcRenderer.on('RESULT-TEST-PRINT', async (event, data) => {
+  ipcRenderer.on('RESULT-PRINT', async (event, data) => {
     document.getElementById('resultBox').style.display = 'flex';
     if (data.state) {
       document.getElementById('resultBox').style.backgroundColor = '#4BB543';
