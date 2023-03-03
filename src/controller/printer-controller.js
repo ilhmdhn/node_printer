@@ -2,9 +2,17 @@ const escpos = require('escpos');
 const path = require('path');
 escpos.USB = require('escpos-usb');
 
+const {
+  getOutletInfo,
+  getInvoiceInfo,
+  getPromoInfo,
+  getItemList,
+  getInvoiceDetail
+} = require('../model/invoice-model');
+
 const testPrint = ()=>{
     try{
-        const options = { encoding: "GB18030" /* default */ }
+        const options = { encoding: "GB18030" /* default */ };
         const device = new escpos.USB();
         const printer = new escpos.Printer(device, options);
         device.open((err) => {
@@ -16,7 +24,7 @@ const testPrint = ()=>{
             }else{
                 printer.newLine()
                     .align('ct')
-                escpos.Image.load( path.join(__dirname, '../assets/tb.png'), (image) => {
+                escpos.Image.load(path.join(__dirname, '../assets/tb_ori.png'), (image) => {
                     printer.image(image) .then(() => { 
                         printer.font('a')
                         .size(0.1, 1)
@@ -51,7 +59,9 @@ const testPrint = ()=>{
                             ],
                             {size: [1, 1] } // Optional
                         )
+                        .style('B')
                         .text('-----------------------------------------------')
+                        .style('NORMAL')
                         .tableCustom(
                             [
                               { text:" 1 DONAT SATE MUISJES", align:"LEFT", width:0.75},
@@ -80,7 +90,9 @@ const testPrint = ()=>{
                             ],
                             {size: [1, 1] } // Optional
                         )
+                        .style('B')
                         .text('-----------------------------------------------')
+                        .style('NORMAL')
                         .tableCustom(
                             [
                               { text:"   SUBTOTAL", align:"LEFT", width:0.75},
@@ -95,7 +107,9 @@ const testPrint = ()=>{
                             ],
                             {size: [1, 1] } // Optional
                         )
+                        .style('B')
                         .text('-----------------------------------------------')
+                        .style('NORMAL')
                         .tableCustom(
                             [
                               { text:"   TOTAL", align:"LEFT", width:0.75},
@@ -110,10 +124,13 @@ const testPrint = ()=>{
                             ],
                             {size: [1, 1] } // Optional
                         )
+                        .style('B')
                         .text('==============================================')
+                        .style('NORMAL')
                         .text('Closed Bill')
                         .text('<--------------24/02/2023 13:34--------------->')
                         .text('TERIMA KASIH')
+                        .drawLine()
                         .cut()
                         .close() 
                      });
@@ -127,6 +144,7 @@ const testPrint = ()=>{
           }
         
     }catch(err){
+      console.log(err)
         return {
           state: false,
           message: err.message
@@ -135,6 +153,58 @@ const testPrint = ()=>{
     }
 }
 
+
+const printInvoice = (invoiceCode) =>{
+  return new Promise(async(resolve, reject)=>{
+    try{
+        const outletInfo = await getOutletInfo();
+        const invoiceInfo = await getInvoiceInfo(invoiceCode);
+        const sellingCode = invoiceInfo.selling_order_code;
+        const itemList = await getItemList(sellingCode);
+        const promoInfo = await getPromoInfo();
+        const invoiceDetail = await getInvoiceDetail(invoiceCode);
+
+        const options = { encoding: "GB18030" /* default */ };
+        const device = new escpos.USB();
+        const printer = new escpos.Printer(device, options);
+
+        device.open((err)=>{
+          if(err){
+            resolve({
+              state: false,
+              message: err.message
+            });
+          }else{
+            printer
+              .newLine()
+              .align('ct')
+              escpos.Image.load(path.join(__dirname+'../assets/tb_ori.png'), (image)=>{
+                printer.image(image)
+                  .then(()=>{
+                    printer
+                      .font('a')
+                      .size(0.1,1)
+                      .newLine()
+                      .newLine()
+                      .style('NORMAL')
+                      .text(outletInfo.outlet_name)
+                      .text(outletInfo.outlet_address)
+                      .text(outletInfo.outlet_second_address)
+                      .text(outletInfo.outlet_phone)
+                      .text(outletInfo.outlet_city)
+                      .newLine()
+                      .text('INVOICE')
+                      
+                  })
+              })
+          }
+        });
+
+    }catch(err){
+
+    }
+  });
+}
 
 /*
     FONT SEMI GEDE

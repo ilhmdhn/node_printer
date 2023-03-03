@@ -3,9 +3,11 @@ const dgram = require('node:dgram');
 const {testPrint} = require('./src/controller/printer-controller')
 const identity = require('./src/tools/printer-initial');
 const {createPrinterAddressTable, registerPrinter} = require('./src/tools/add-table');
+const { parseJson } = require('builder-util-runtime');
 
 const createWindow = () => {
     const server = dgram.createSocket('udp4');
+    server.bind(3456);
     const win = new BrowserWindow({
         width: 480,
         height: 510,
@@ -116,11 +118,11 @@ const createWindow = () => {
         server.close();
       });
 
-    server.on('thermal-print', (msg, sender)=>{
-        console.log(sender)
+    server.on('message', async(msg, sender)=>{
+        msg = JSON.parse(msg.toString());
+        console.log(msg.data.invoice);
+        showPrintRequest(testPrint())
     });
-
-    server.bind(3456);
 }
 
 app.whenReady().then(() => {
