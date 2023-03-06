@@ -6,7 +6,8 @@ const identity = () =>{
             const identity = {
                 ipAddress: process.env.IP_ADDRESS,
                 name: process.env.PRINTER_NAME,
-                port: process.env.PRINTER_PORT
+                port: process.env.PRINTER_PORT,
+                socket: process.env.SOCKET_PORT
             }
             resolve(identity);
         }catch(err){

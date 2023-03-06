@@ -34,21 +34,20 @@ const getOutletInfo = () =>{
     });
 }
 
-const getInvoiceInfo = (invoiceCode) =>{
+const getInvoiceInfo = (sellingCode) =>{
     return new Promise((resolve, reject)=>{
         try{
             const query = `
                 SELECT
-                    [Invoice] as invoice_code,
+                    [Invoice] as selling_order_code,
                     [Date] as invoice_date,
-                    [OrderPenjualan] as selling_order_code,
                     [Nama_Member] as member_name,
                     [Status] as state,
-                    [Chuser] as user
+                    [Chuser] as [user]
                 FROM
                     IHP_Oml
                 WHERE
-                    [Invoice] = '${invoiceCode}'
+                    [Invoice] = '${sellingCode}'
             `
             sql.connect(sqlConfig, err=>{
                 if(err){
@@ -80,7 +79,7 @@ const getPromoInfo = (orderCode, itemCode) =>{
                 SELECT
                     [OrderPenjualan] as order_code,
                     [Inventory] as item_code,
-                    [Promo_Food] as promo_name
+                    [Promo_Food] as promo_name,
                     [Harga_Promo] as promo_charge
                 FROM
                     [IHP_Jual_Promo]
@@ -98,7 +97,7 @@ const getPromoInfo = (orderCode, itemCode) =>{
                             reject(`Error getPromoInfo query ${query}\n${err}`);
                         }else{
                             if(result.recordset.length>0){
-                                resolve(result.recordset);
+                                resolve(result.recordset[0]);
                             }else{
                                 resolve(false);
                             }
@@ -112,22 +111,24 @@ const getPromoInfo = (orderCode, itemCode) =>{
     });
 }
 
-const getItemList = (invoiceCode) =>{
+const getItemList = (sellingCode) =>{
     return new Promise((resolve, reject)=>{
         try{
             const query = `
                 SELECT
+                    [Invoice] as selling_code,
                     [Nama_Item] as item_name,
                     [Harga] as item_price,
+                    [Inventory] as inventory,
                     [Service] as item_service,
-                    [Pajax] as item_tax,
+                    [Pajak] as item_tax,
                     [Diskon] as item_discount,
                     [qty] as item_qty
                 FROM
                     IHP_Omd
                 WHERE
-                    [Invoice] = '${invoiceCode}'
-            `
+                    [Invoice] = '${sellingCode}'
+            `;
             sql.connect(sqlConfig, err=>{
                 if(err){
                     reject(`Can't connect to database ${err}`);
@@ -135,6 +136,7 @@ const getItemList = (invoiceCode) =>{
                     new sql.Request().query(query, (err, result)=>{
                         if(err){
                             reject(`Error getItemList query ${query}\n${err}`);
+                            console.log(`Error getItemList query ${query}\n${err}`);
                         }else{
                             if(result.recordset.length>0){
                                 resolve(result.recordset);
@@ -159,6 +161,7 @@ const getInvoiceDetail = (invoiceCode) =>{
                     [Charge_Penjualan] as selling_charge,
                     [Discount_Penjualan] as selling_discount,
                     [Service_Penjualan] as selling_service,
+                    [OrderPenjualan] as selling_order_code,
                     [Tax_Penjualan] as selling_tax,
                     [Total_Penjualan] as selling_fix,
                     [Charge_Lain] as selling_other,
@@ -191,10 +194,84 @@ const getInvoiceDetail = (invoiceCode) =>{
     });
 }
 
+const getBill = (sellingCode) =>{
+    return new Promise((resolve, reject)=>{
+        try{
+            const query = `
+                SELECT
+                    Summary as bill_code,
+                    Total as total,
+                    Bayar as bill,
+                    Kembali as retur
+                FROM 
+                    IHP_Bayar
+                WHERE
+                    OrderPenjualan = '${sellingCode}'
+            `;
+            sql.connect(sqlConfig, err=>{
+                if(err){
+                    reject(`Can't connect to database ${err}`);
+                }else{
+                    new sql.Request().query(query, (err, result)=>{
+                        if(err){
+                            reject(`Error getBill query ${query}\n${err}`);
+                        }else{
+                            if(result.recordset.length>0){
+                                resolve(result.recordset[0]);
+                            }else{
+                                reject('data pembayaran tidak ada');
+                            }
+                        }
+                    });
+                }
+            });
+        }catch(err){
+            reject(`getBill ${err}`);
+        }
+    });
+}
+
+const getBillDetail = (billCode) =>{
+    return new Promise((resolve, reject)=>{
+        try{
+            const query = `
+                SELECT
+                    [Nama_Payment] as payment_name,
+                    [Pay_Value] as pay_value
+                FROM 
+                    [IHP_BayarD]
+                WHERE
+                    [Summary] = '${billCode}'
+            `;
+            sql.connect(sqlConfig, err=>{
+                if(err){
+                    reject(`Can't connect to database ${err}`);
+                }else{
+                    new sql.Request().query(query, (err, result)=>{
+                        if(err){
+                            reject(`Error getBill query ${query}\n${err}`);
+                        }else{
+                            if(result.recordset.length>0){
+                                resolve(result.recordset);
+                            }else{
+                                reject('data pembayaran tidak ada');
+                            }
+                        }
+                    });
+                }
+            });
+        }catch(err){
+            reject(`getBillDetail ${err}`);
+        }
+    });
+}
+
 module.exports = {
     getOutletInfo,
     getInvoiceInfo,
     getPromoInfo,
     getItemList,
-    getInvoiceDetail
+    getInvoiceDetail,
+    getBill,
+    getBillDetail
 }

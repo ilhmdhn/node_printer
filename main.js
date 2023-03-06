@@ -1,13 +1,40 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain} = require('electron');
 const dgram = require('node:dgram');
-const {testPrint} = require('./src/controller/printer-controller')
+const {testPrint, printInvoice} = require('./src/controller/printer-controller')
 const identity = require('./src/tools/printer-initial');
 const {createPrinterAddressTable, registerPrinter} = require('./src/tools/add-table');
 const { parseJson } = require('builder-util-runtime');
+const net = require('node:net');
 
 const createWindow = () => {
     const server = dgram.createSocket('udp4');
     server.bind(3456);
+
+    const socket = net.createServer();
+    
+    socket.on('close', function () {
+        console.log('socket closed !');
+    });
+
+    socket.on('error', function (error) {
+        console.log('socket.on Error: ' + error);
+    });
+
+    socket.on('listening', function () {
+        console.log('server socket tcp is on listening at port 3457');
+    });
+
+    socket.on('connection', function (socket) {    
+        socket.setEncoding('utf8');
+        socket.on('data', async(data)=> {
+            str = data.toString().replace(/^"(.*)"$/, '$1');
+            showPrintRequest(await printInvoice(str));
+        });
+    });
+
+    socket.listen(3457);
+
+
     const win = new BrowserWindow({
         width: 480,
         height: 510,
@@ -103,7 +130,8 @@ const createWindow = () => {
             {
                 name:printerIdentity.name,
                 ip:printerIdentity.ipAddress,
-                port:printerIdentity.port
+                port:printerIdentity.port,
+                socket:printerIdentity.socket
             }
         );
     });
@@ -117,11 +145,16 @@ const createWindow = () => {
         );
         server.close();
       });
-
+    /*
     server.on('message', async(msg, sender)=>{
         msg = JSON.parse(msg.toString());
         console.log(msg.data.invoice);
         showPrintRequest(testPrint())
+    });
+    */
+    server.on('message', async(msg, sender)=>{
+        str = msg.toString().replace(/^"(.*)"$/, '$1');
+        showPrintRequest(await printInvoice(str));
     });
 }
 

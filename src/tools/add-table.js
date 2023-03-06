@@ -36,7 +36,8 @@ const registerPrinter = (dataPrinter) => {
             BEGIN TRAN
             UPDATE IHP_IPAddress with (serializable) SET
                [IP_Address] = '${dataPrinter.ipAddress}',
-               [Server_Udp_Port] = '${dataPrinter.port}'
+               [Server_Udp_Port] = '${dataPrinter.port}',
+               [Server_Socket_Port] = '${dataPrinter.socket}'
             WHERE [Aplikasi] = '${dataPrinter.name}'
            IF @@rowcount = 0
            BEGIN
