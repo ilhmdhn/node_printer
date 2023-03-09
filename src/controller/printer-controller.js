@@ -136,7 +136,6 @@ const testPrint = () => {
   }
 }
 
-
 const printInvoice = (invoiceCode) => {
   return new Promise(async (resolve, reject) => {
     try {

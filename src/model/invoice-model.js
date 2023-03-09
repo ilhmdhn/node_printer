@@ -331,6 +331,39 @@ const setPrinted = (orderCode) =>{
     })
 }
 
+const getWaitingPrint = () =>{
+    return new Promise((resolve, reject)=>{
+        try{
+            const query = `
+                SELECT
+                    [Invoice] as order_code
+                FROM 
+                    IHP_Oml
+                WHERE Status = 0
+            `;
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    resolve(false);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            resolve(false);
+                        } else {
+                            if(result.recordset.length > 0){
+                                resolve(result.recordset[0].order_code);
+                            }else{
+                                resolve(false);
+                            }
+                        }
+                    });
+                }
+            });
+        }catch(err){
+            resolve(false);
+        }
+    });
+}
+
 module.exports = {
     getOutletInfo,
     getInvoiceInfo,
@@ -340,5 +373,6 @@ module.exports = {
     getBill,
     getBillDetail,
     getInvoiceCode,
-    setPrinted
+    setPrinted,
+    getWaitingPrint
 }

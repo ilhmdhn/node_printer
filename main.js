@@ -1,10 +1,8 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
-const dgram = require('node:dgram');
 const { testPrint, printInvoice, manualPrint } = require('./src/controller/printer-controller')
 const identity = require('./src/tools/printer-initial');
-const { createPrinterAddressTable, registerPrinter } = require('./src/tools/add-table');
-const net = require('node:net');
-const startTimer = require('./src/tools/timer-cek-print-list')
+const { createPrinterAddressTable, registerPrinter,creatOmlTable, createOmdTable } = require('./src/tools/add-table');
+const startTimer = require('./src/tools/timer-cek-print-list');
 
 const createWindow = () => {
 
@@ -12,8 +10,6 @@ const createWindow = () => {
     const gotTheLock = app.requestSingleInstanceLock(additionalData);
 
     if (!gotTheLock) {
-        // win == null;
-        // app.quit();
         return;
     }
 
@@ -29,34 +25,6 @@ const createWindow = () => {
         autoHideMenuBar: true,
         enableRemoteModule: true
     });
-
-    const server = dgram.createSocket('udp4');
-    server.bind(3456);
-    startTimer();
-    const socket = net.createServer((client) => {
-        console.log('client connected');
-
-        client.on('close', (isClosed) => {
-            console.log(`Client closed ${isClosed}`);
-        });
-
-        client.on('end', () => {
-            console.log('client disconnected');
-        });
-
-        client.on('error', (err)=>{
-            console.log(`client error ${err}`);
-        });
-
-        client.on('data', async(data) => {
-            console.log(data.toString())
-            const str = data.toString().replace(/^"(.*)"$/, '$1');
-            showPrintRequest(await printInvoice(str));
-        });
-
-        client.pipe(client);
-    });
-    socket.listen(3457);
 
     win.focus();
     win.center();
@@ -83,7 +51,9 @@ const createWindow = () => {
             win.show();
         }
     })
+
     tray.setTitle('Thermal Printer Service');
+
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Quit',
@@ -96,6 +66,7 @@ const createWindow = () => {
 
 
     tray.setContextMenu(contextMenu);
+
     win.loadFile(__dirname + '/src/views/index.html');
 
     const showPrintRequest = (printnya) => {
@@ -106,7 +77,7 @@ const createWindow = () => {
         showPrintRequest(testPrint())
     });
 
-    ipcMain.on('MANUAL-PRINT', async(event, orderCode)=>{
+    ipcMain.on('MANUAL-PRINT', async (event, orderCode) => {
         showPrintRequest(await manualPrint(orderCode));
     });
 
@@ -114,7 +85,9 @@ const createWindow = () => {
         try {
             const printerIdentity = await identity()
             // await createPrinterAddressTable();
-            await registerPrinter(printerIdentity);
+            // await registerPrinter(printerIdentity);
+            await creatOmlTable()
+            await createOmdTable()
             win.webContents.send('CONNECTION-PRINTER',
                 {
                     state: true,
@@ -141,7 +114,55 @@ const createWindow = () => {
         );
     });
 
-    server.on('error', (err) => {
+    startTimer()
+}
+
+app.whenReady().then(() => {
+    createWindow();
+});
+
+//GAJADI MAIN SINYAL
+
+/*
+
+-----TCP-----
+
+const net = require('node:net');
+
+    const socket = net.createServer((client) => {
+        console.log('client connected');
+
+        client.on('close', (isClosed) => {
+            console.log(`Client closed ${isClosed}`);
+        });
+
+        client.on('end', () => {
+            console.log('client disconnected');
+        });
+
+        client.on('error', (err)=>{
+            console.log(`client error ${err}`);
+        });
+
+        client.on('data', async(data) => {
+            console.log(data.toString())
+            const str = data.toString().replace(/^"(.*)"$/, '$1');
+            showPrintRequest(await printInvoice(str));
+        });
+
+        client.pipe(client);
+    });
+    socket.listen(3457);
+
+
+    ----UDP-----
+    const dgram = require('node:dgram');
+    
+    
+    const server = dgram.createSocket('udp4');
+    server.bind(3456);
+
+        server.on('error', (err) => {
         win.webContents.send('CONNECTION-PRINTER',
             {
                 state: false,
@@ -156,13 +177,10 @@ const createWindow = () => {
         console.log(msg.data.invoice);
         showPrintRequest(testPrint())
     });
-    */
+    
     server.on('message', async (msg, sender) => {
         const str = msg.toString().replace(/^"(.*)"$/, '$1');
         showPrintRequest(await printInvoice(str));
     });
-}
 
-app.whenReady().then(() => {
-    createWindow();
-});
+*/

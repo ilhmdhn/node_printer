@@ -69,7 +69,79 @@ const registerPrinter = (dataPrinter) => {
     })
 }
 
+const creatOmlTable = () => {
+    return new Promise((resolve) => {
+        try {
+            const query = `
+            IF NOT EXISTS (SELECT * FROM information_schema.TABLES WHERE TABLE_NAME = 'IHP_Oml') 
+                BEGIN
+                    CREATE TABLE [dbo].[IHP_Oml](
+                        [Invoice] [nvarchar](25) PRIMARY KEY NOT NULL,
+                        [Date] [nvarchar](30),
+                        [Member] [nvarchar](10),
+                        [Nama_Member] [nvarchar](10),
+                        [Status] smallint,
+                        [CHuser] [nvarchar](30)
+                    )
+                END`
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    resolve(err.message);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            resolve(err.message);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            resolve(err.message);
+        }
+    });
+}
+
+const createOmdTable = () => {
+    return new Promise((resolve) => {
+        try {
+            const query = `
+            IF NOT EXISTS (SELECT * FROM information_schema.TABLES WHERE TABLE_NAME = 'IHP_Omd') 
+                BEGIN
+                    CREATE TABLE [dbo].[IHP_Omd](
+                        [Invoice] [nvarchar](25) NOT NULL,
+                        [Inventory] [nvarchar](50),
+                        [Nama_Item] [nvarchar](50),
+                        [Harga] [nvarchar](10),
+                        [Service] [nvarchar](10),
+                        [Pajak] [nvarchar](10),
+                        [Diskon] [nvarchar](10),
+                        [qty] [nvarchar](10)
+                    )
+                END`
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    resolve(err.message);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            resolve(err.message);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            resolve(err.message);
+        }
+    });
+}
+
 module.exports = {
     createPrinterAddressTable,
-    registerPrinter
+    registerPrinter,
+    creatOmlTable,
+    createOmdTable
 }
