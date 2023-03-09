@@ -1,9 +1,9 @@
 const sqlConfig = require('../tools/db-configuration');
 const sql = require('mssql');
 
-const getOutletInfo = () =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getOutletInfo = () => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
             SELECT
                 Nama_Outlet as outlet_name,
@@ -16,27 +16,28 @@ const getOutletInfo = () =>{
             WHERE
                 DATA = '1'
         `
-        sql.connect(sqlConfig, err=>{
-            if(err){
-                reject(`Can't connect to database ${err}`);
-            }else{
-                new sql.Request().query(query, (err, result)=>{
-                    if(err){
-                        reject(`Error getOutletInfo query ${query}\n${err}`);
-                    }else{
-                        resolve(result.recordset[0]);
-                    }
-                });
-            }});
-        }catch(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    reject(`Can't connect to database ${err}`);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            reject(`Error getOutletInfo query ${query}\n${err}`);
+                        } else {
+                            resolve(result.recordset[0]);
+                        }
+                    });
+                }
+            });
+        } catch (err) {
             reject(`getOutletInfo ${err}`);
         }
     });
 }
 
-const getInvoiceInfo = (sellingCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getInvoiceInfo = (sellingCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT
                     [Invoice] as selling_order_code,
@@ -49,32 +50,32 @@ const getInvoiceInfo = (sellingCode) =>{
                 WHERE
                     [Invoice] = '${sellingCode}'
             `
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to databases ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getInvoiceInfo ${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset[0]);
-                            }else{
+                            } else {
                                 reject('Kode invoice tidak dikenali');
                             }
                         }
                     });
                 }
             });
-        }catch(err){
+        } catch (err) {
             reject(`getInvoiceInfo ${err}`);
         }
     })
 }
 
-const getPromoInfo = (orderCode, itemCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getPromoInfo = (orderCode, itemCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT
                     [OrderPenjualan] as order_code,
@@ -88,32 +89,32 @@ const getPromoInfo = (orderCode, itemCode) =>{
                 AND
                     [Inventory] = '${itemCode}'
             `;
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to database ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getPromoInfo query ${query}\n${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset[0]);
-                            }else{
+                            } else {
                                 resolve(false);
                             }
                         }
                     });
                 }
             });
-        }catch(err){
+        } catch (err) {
             reject(`getPromoInfo ${err}`);
         }
     });
 }
 
-const getItemList = (sellingCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getItemList = (sellingCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT
                     [Invoice] as selling_code,
@@ -129,33 +130,33 @@ const getItemList = (sellingCode) =>{
                 WHERE
                     [Invoice] = '${sellingCode}'
             `;
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to database ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getItemList query ${query}\n${err}`);
                             console.log(`Error getItemList query ${query}\n${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset);
-                            }else{
+                            } else {
                                 resolve(false);
                             }
                         }
                     });
                 }
             })
-        }catch(err){
+        } catch (err) {
             reject(`getItemList ${err}`);
         }
     })
 }
 
-const getInvoiceDetail = (invoiceCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getInvoiceDetail = (invoiceCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT 
                     [Charge_Penjualan] as selling_charge,
@@ -171,32 +172,32 @@ const getInvoiceDetail = (invoiceCode) =>{
                 WHERE
                     [Invoice] = '${invoiceCode}'
             `;
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to database ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getInvoiceDetail query ${query}\n${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset[0]);
-                            }else{
+                            } else {
                                 reject('invoice tidak ada');
                             }
                         }
                     });
                 }
             });
-        }catch(err){
+        } catch (err) {
             reject(`getInvoiceDetail ${err}`);
         }
     });
 }
 
-const getBill = (sellingCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getBill = (sellingCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT
                     Summary as bill_code,
@@ -208,32 +209,32 @@ const getBill = (sellingCode) =>{
                 WHERE
                     OrderPenjualan = '${sellingCode}'
             `;
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to database ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getBill query ${query}\n${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset[0]);
-                            }else{
+                            } else {
                                 reject('data pembayaran tidak ada');
                             }
                         }
                     });
                 }
             });
-        }catch(err){
+        } catch (err) {
             reject(`getBill ${err}`);
         }
     });
 }
 
-const getBillDetail = (billCode) =>{
-    return new Promise((resolve, reject)=>{
-        try{
+const getBillDetail = (billCode) => {
+    return new Promise((resolve, reject) => {
+        try {
             const query = `
                 SELECT
                     [Nama_Payment] as payment_name,
@@ -243,27 +244,91 @@ const getBillDetail = (billCode) =>{
                 WHERE
                     [Summary] = '${billCode}'
             `;
-            sql.connect(sqlConfig, err=>{
-                if(err){
+            sql.connect(sqlConfig, err => {
+                if (err) {
                     reject(`Can't connect to database ${err}`);
-                }else{
-                    new sql.Request().query(query, (err, result)=>{
-                        if(err){
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
                             reject(`Error getBill query ${query}\n${err}`);
-                        }else{
-                            if(result.recordset.length>0){
+                        } else {
+                            if (result.recordset.length > 0) {
                                 resolve(result.recordset);
-                            }else{
+                            } else {
                                 reject('data pembayaran tidak ada');
                             }
                         }
                     });
                 }
             });
-        }catch(err){
+        } catch (err) {
             reject(`getBillDetail ${err}`);
         }
     });
+}
+
+const getInvoiceCode = (sellingCode) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `
+                SELECT 
+                    [Invoice] as invoice
+                FROM
+                    IHP_Ivc_Mart
+                WHERE
+                    [OrderPenjualan] = '${sellingCode}'
+            `;
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    reject(`Can't connect to database ${err}`);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            reject(`Error getInvoiceCode query ${query}\n${err}`);
+                        } else {
+                            if (result.recordset.length > 0) {
+                                resolve(result.recordset[0].invoice);
+                            } else {
+                                reject('invoice tidak ada');
+                            }
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            reject(`getInvoiceCode ${err}`);
+        }
+    });
+}
+
+const setPrinted = (orderCode) =>{
+    return new Promise((resolve)=>{
+        try{
+            const query = `
+                UPDATE 
+                    IHP_Oml 
+                SET 
+                    Status = 1
+                WHERE
+                    Invoice = '${orderCode}'
+            `;
+            sql.connect(sqlConfig, err => {
+                if (err) {
+                    resolve(`Can't connect to database ${err}`);
+                } else {
+                    new sql.Request().query(query, (err, result) => {
+                        if (err) {
+                            resolve(`Error getInvoiceCode query ${query}\n${err}`);
+                        } else {
+                            resolve(true);
+                        }
+                    });
+                }
+            });
+        }catch(err){
+            resolve(`setPrinted ${err}`);
+        }
+    })
 }
 
 module.exports = {
@@ -273,5 +338,7 @@ module.exports = {
     getItemList,
     getInvoiceDetail,
     getBill,
-    getBillDetail
+    getBillDetail,
+    getInvoiceCode,
+    setPrinted
 }

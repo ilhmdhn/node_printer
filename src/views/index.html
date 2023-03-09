@@ -198,8 +198,11 @@
       <label>IP Address</label>
     </div>
     <div class="user-box">
-      <input readonly type="text" id="text_port" name="port" value="">
-      <label>Port</label>
+      <label>Manual Print</label>
+      <div>
+        <input style="width: 70%;" type="text" id="manual_print" name="manual_print" value="">
+        <button onclick="manualPrint()" style="width: 5em; height: auto; background-color: #1f1f20; border: solid 2px white; color: white; border-radius: 4px; margin-left: 1em;" class="user-box" id="btn_manual_print" name="btn_manual_print">Print</button>
+      </div>
     </div>
     <span></span>
     <span></span>
@@ -254,6 +257,10 @@
     ipcRenderer.send('SUBMIT-TEST-PRINT', 'start printer test');
   }
 
+  const manualPrint = () =>{
+    const orderCode = document.getElementById('manual_print').value;
+    ipcRenderer.send('MANUAL-PRINT', orderCode)
+  }
 
   ipcRenderer.on('RESULT-PRINT', async (event, data) => {
     document.getElementById('resultBox').style.display = 'flex';

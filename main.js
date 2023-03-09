@@ -1,39 +1,21 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain} = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
 const dgram = require('node:dgram');
-const {testPrint, printInvoice} = require('./src/controller/printer-controller')
+const { testPrint, printInvoice, manualPrint } = require('./src/controller/printer-controller')
 const identity = require('./src/tools/printer-initial');
-const {createPrinterAddressTable, registerPrinter} = require('./src/tools/add-table');
-const { parseJson } = require('builder-util-runtime');
+const { createPrinterAddressTable, registerPrinter } = require('./src/tools/add-table');
 const net = require('node:net');
+const startTimer = require('./src/tools/timer-cek-print-list')
 
 const createWindow = () => {
-    const server = dgram.createSocket('udp4');
-    server.bind(3456);
 
-    const socket = net.createServer();
-    
-    socket.on('close', function () {
-        console.log('socket closed !');
-    });
+    const additionalData = { myKey: 'thermalprinterservices' }
+    const gotTheLock = app.requestSingleInstanceLock(additionalData);
 
-    socket.on('error', function (error) {
-        console.log('socket.on Error: ' + error);
-    });
-
-    socket.on('listening', function () {
-        console.log('server socket tcp is on listening at port 3457');
-    });
-
-    socket.on('connection', function (socket) {    
-        socket.setEncoding('utf8');
-        socket.on('data', async(data)=> {
-            str = data.toString().replace(/^"(.*)"$/, '$1');
-            showPrintRequest(await printInvoice(str));
-        });
-    });
-
-    socket.listen(3457);
-
+    if (!gotTheLock) {
+        // win == null;
+        // app.quit();
+        return;
+    }
 
     const win = new BrowserWindow({
         width: 480,
@@ -48,14 +30,33 @@ const createWindow = () => {
         enableRemoteModule: true
     });
 
-    const additionalData = { myKey: 'thermalprinterservices' }
-    const gotTheLock = app.requestSingleInstanceLock(additionalData);
+    const server = dgram.createSocket('udp4');
+    server.bind(3456);
+    startTimer();
+    const socket = net.createServer((client) => {
+        console.log('client connected');
 
-    if (!gotTheLock) {
-        win == null;
-        app.quit();
-        return;
-    }
+        client.on('close', (isClosed) => {
+            console.log(`Client closed ${isClosed}`);
+        });
+
+        client.on('end', () => {
+            console.log('client disconnected');
+        });
+
+        client.on('error', (err)=>{
+            console.log(`client error ${err}`);
+        });
+
+        client.on('data', async(data) => {
+            console.log(data.toString())
+            const str = data.toString().replace(/^"(.*)"$/, '$1');
+            showPrintRequest(await printInvoice(str));
+        });
+
+        client.pipe(client);
+    });
+    socket.listen(3457);
 
     win.focus();
     win.center();
@@ -95,56 +96,60 @@ const createWindow = () => {
 
 
     tray.setContextMenu(contextMenu);
-    win.loadFile(__dirname+'/src/views/index.html');
+    win.loadFile(__dirname + '/src/views/index.html');
 
-    const showPrintRequest = (printnya)=>{
+    const showPrintRequest = (printnya) => {
         win.webContents.send('RESULT-PRINT', printnya);
     }
 
-    ipcMain.on('SUBMIT-TEST-PRINT', (event, msg)=>{
+    ipcMain.on('SUBMIT-TEST-PRINT', (event, msg) => {
         showPrintRequest(testPrint())
     });
 
-    win.webContents.on('did-finish-load', async() => {
-        try{
+    ipcMain.on('MANUAL-PRINT', async(event, orderCode)=>{
+        showPrintRequest(await manualPrint(orderCode));
+    });
+
+    win.webContents.on('did-finish-load', async () => {
+        try {
             const printerIdentity = await identity()
             // await createPrinterAddressTable();
             await registerPrinter(printerIdentity);
-            win.webContents.send('CONNECTION-PRINTER', 
-            {
-                state: true,
-                message: 'Printer Registered'
-            }
-        );
-        }catch(err){
-            win.webContents.send('CONNECTION-PRINTER', 
-            {
-                state: false,
-                message: 'Error '+err
-            }
+            win.webContents.send('CONNECTION-PRINTER',
+                {
+                    state: true,
+                    message: 'Printer Registered'
+                }
+            );
+        } catch (err) {
+            win.webContents.send('CONNECTION-PRINTER',
+                {
+                    state: false,
+                    message: 'Error ' + err
+                }
             );
         }
 
         const printerIdentity = await identity();
-        win.webContents.send('INITIAL-PRINTER', 
+        win.webContents.send('INITIAL-PRINTER',
             {
-                name:printerIdentity.name,
-                ip:printerIdentity.ipAddress,
-                port:printerIdentity.port,
-                socket:printerIdentity.socket
+                name: printerIdentity.name,
+                ip: printerIdentity.ipAddress,
+                port: printerIdentity.port,
+                socket: printerIdentity.socket
             }
         );
     });
 
     server.on('error', (err) => {
-        win.webContents.send('CONNECTION-PRINTER', 
-        {
-            state: false,
-            message: 'Error '+err
-        }
+        win.webContents.send('CONNECTION-PRINTER',
+            {
+                state: false,
+                message: 'Error ' + err
+            }
         );
         server.close();
-      });
+    });
     /*
     server.on('message', async(msg, sender)=>{
         msg = JSON.parse(msg.toString());
@@ -152,8 +157,8 @@ const createWindow = () => {
         showPrintRequest(testPrint())
     });
     */
-    server.on('message', async(msg, sender)=>{
-        str = msg.toString().replace(/^"(.*)"$/, '$1');
+    server.on('message', async (msg, sender) => {
+        const str = msg.toString().replace(/^"(.*)"$/, '$1');
         showPrintRequest(await printInvoice(str));
     });
 }
