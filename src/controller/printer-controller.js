@@ -35,6 +35,18 @@ const testPrint = () => {
               .font('A')
               .size(0, 0)
               .newLine()
+              .size(0.3, 0.2)
+              .text('TEST FONT A 0.3, 0.2')
+              .size(0, 0)
+              .newLine()
+              .size(0.2, 0.3)
+              .text('TEST FONT A 0.2, 0.3')
+              .size(0, 0)
+              .newLine()
+              .size(0.3, 0.3)
+              .text('TEST FONT A 0.3, 0.3')
+              .size(0, 0)
+              .newLine()
               .size(0.1, 0.1)
               .text('TEST FONT A 0.1, 0.1')
               .size(0, 0)
@@ -127,7 +139,7 @@ const testPrint = () => {
     }
 
   } catch (err) {
-    console.log(err)
+    // console.log(err)
     return {
       state: false,
       message: err.message
@@ -310,8 +322,8 @@ const printInvoice = (invoiceCode) => {
   });
 }
 
-const manualPrint = (sellingCode) =>{
-  return new Promise(async (resolve, reject)=>{
+const manualPrint = (sellingCode) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const invoiceCode = await getInvoiceCode(sellingCode);
       const outletInfo = await getOutletInfo();
@@ -414,7 +426,7 @@ const manualPrint = (sellingCode) =>{
                   )
                   .tableCustom(
                     [
-                      { text: '-----------------', align: "RIGHT", width: 0.5 }
+                      { text: '----------------------', align: "RIGHT", width: 0.5 }
                     ],
                     { size: [1, 1] } // Optional
                   )
@@ -428,6 +440,7 @@ const manualPrint = (sellingCode) =>{
                   )
                 for (let i = 0; i < billDetail.length; i++) {
                   printer
+                    .style('B')
                     .tableCustom(
                       [
                         { text: billDetail[i].payment_name, align: "RIGHT", width: 0.3 },
@@ -437,9 +450,10 @@ const manualPrint = (sellingCode) =>{
                     )
                 }
                 printer
+                  .style('NORMAL')
                   .tableCustom(
                     [
-                      { text: '-----------------', align: "RIGHT", width: 0.5 }
+                      { text: '----------------------', align: "RIGHT", width: 0.5 }
                     ],
                     { size: [1, 1] } // Optional
                   )

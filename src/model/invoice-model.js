@@ -137,7 +137,7 @@ const getItemList = (sellingCode) => {
                     new sql.Request().query(query, (err, result) => {
                         if (err) {
                             reject(`Error getItemList query ${query}\n${err}`);
-                            console.log(`Error getItemList query ${query}\n${err}`);
+                            // console.log(`Error getItemList query ${query}\n${err}`);
                         } else {
                             if (result.recordset.length > 0) {
                                 resolve(result.recordset);
