@@ -30,8 +30,10 @@
     "builder-util-runtime": "^9.2.0-alpha.3",
     "dotenv": "^16.0.3",
     "escpos": "^3.0.0-alpha.6",
+    "escpos-network": "^3.0.0-alpha.5",
     "escpos-usb": "^3.0.0-alpha.4",
     "mssql": "^9.1.1",
+    "network": "^0.6.1",
     "node-cron": "^3.0.2",
     "usb": "^1.9.2"
   },

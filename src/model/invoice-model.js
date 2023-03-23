@@ -117,16 +117,19 @@ const getItemList = (sellingCode) => {
         try {
             const query = `
                 SELECT
-                    [Invoice] as selling_code,
-                    [Nama_Item] as item_name,
-                    [Harga] as item_price,
-                    [Inventory] as inventory,
-                    [Service] as item_service,
-                    [Pajak] as item_tax,
-                    [Diskon] as item_discount,
-                    [qty] as item_qty
+                    omd.[Invoice] as selling_code,
+                    omd.[Nama_Item] as item_name,
+                    inv.Price as item_price,
+                    omd.[Inventory] as inventory,
+                    omd.[Service] as item_service,
+                    omd.[Pajak] as item_tax,
+                    omd.[Diskon] as item_discount,
+                    omd.[qty] as item_qty
                 FROM
-                    IHP_Omd
+                    IHP_Omd omd
+                LEFT JOIN
+                    IHP_Inventory_Mart inv 
+                ON inv.Inventory = omd.Inventory
                 WHERE
                     [Invoice] = '${sellingCode}'
             `;

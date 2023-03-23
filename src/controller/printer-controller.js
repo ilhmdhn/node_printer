@@ -1,6 +1,7 @@
 const escpos = require('escpos');
 const path = require('path');
 escpos.USB = require('escpos-usb');
+escpos.Network = require('escpos-network');
 const { currency } = require('../tools/currency');
 
 const {
@@ -17,8 +18,10 @@ const {
 
 const testPrint = () => {
   try {
-    const options = { encoding: "GB18030" /* default */, width: 48 };
-    const device = new escpos.USB();
+    const options = { encoding: "GB18030" /* default */, width: 42 };
+    // const device = new escpos.USB();
+    
+    const device = new escpos.Network('192.168.1.222', 9100);
     const printer = new escpos.Printer(device, options);
     device.open((err) => {
       if (err) {
@@ -32,23 +35,45 @@ const testPrint = () => {
         escpos.Image.load(path.join(__dirname, '../assets/tb_ori.png'), (image) => {
           printer.image(image).then(() => {
             printer
+              .newLine()
+              .newLine()
               .font('A')
               .size(0, 0)
-              .newLine()
-              .size(0.3, 0.2)
-              .text('TEST FONT A 0.3, 0.2')
-              .size(0, 0)
-              .newLine()
-              .size(0.2, 0.3)
-              .text('TEST FONT A 0.2, 0.3')
-              .size(0, 0)
-              .newLine()
               .size(0.3, 0.3)
               .text('TEST FONT A 0.3, 0.3')
               .size(0, 0)
               .newLine()
-              .size(0.1, 0.1)
-              .text('TEST FONT A 0.1, 0.1')
+              .size(0.4, 0.4)
+              .text('TEST FONT A 0.4, 0.4')
+              .size(0, 0)
+              .newLine()
+              .size(0.5, 0.5)
+              .text('TEST FONT A 0.5, 0.5')
+              .drawLine()
+              .size(0, 0)
+              .newLine()
+              .size(0.6, 0.6)
+              .text('TEST FONT A 0.6, 0.6')
+              .size(0, 0)
+              .newLine()
+              .size(0.7, 0.7)
+              .text('TEST FONT A 0.7, 0.7')
+              .size(0, 0)
+              .newLine()
+              .size(0.8, 0.8)
+              .text('TEST FONT A 0.8, 0.8')
+              .size(0, 0)
+              .newLine()
+              .size(0.9, 0.9)
+              .text('TEST FONT A 0.9, 0.9')
+              .size(0, 0)
+              .newLine()
+              .size(0.10, 0.10)
+              .text('TEST FONT A 0.10, 0.10')
+              .size(0, 0)
+              .newLine()
+              .size(0.01, 0.01)
+              .text('TEST FONT A 0.01, 0.01')
               .size(0, 0)
               .newLine()
               .size(0.1, 1)
@@ -85,7 +110,7 @@ const testPrint = () => {
               .newLine()
               .size(2, 2)
               .text('TEST FONT A 2, 2')
-              .font('B')
+              .font('a')
               .size(0, 0)
               .newLine()
               .size(0.1, 0.1)
@@ -163,10 +188,12 @@ const printInvoice = (invoiceCode) => {
 
       const options = {
         encoding: "GB18030", /* default */
-        width: 48
+        width: 42
       };
       const device = new escpos.USB();
+      // const device = new escpos.Network('192.168.1.222', 9100);
       const printer = new escpos.Printer(device, options);
+
       device.open((err) => {
         if (err) {
           resolve({
@@ -284,7 +311,13 @@ const printInvoice = (invoiceCode) => {
                   )
                 printer
                   .size(1, 0.1)
-                  .text(`Kembali    ${currency(billInfo.retur)}`)
+                  .tableCustom(
+                    [
+                      { text: 'Kembali', align: "CENTER", width: 0.4 },
+                      { text: `${currency(billInfo.retur)}`, align: "RIGHT", width: 0.4 }
+                    ],
+                    { size: [1, 1] } // Optional
+                  )
                   .size(0, 0)
                   .size(0.1, 1)
                   .style('B')
@@ -292,7 +325,8 @@ const printInvoice = (invoiceCode) => {
                   .style('NORMAL')
                   .newLine()
                   .align('ct')
-                  .text('- Barang yang sudah dibeli tidak bisa dibatalkan')
+                  .text('- Barang yang sudah dibeli tidak bisa')
+                  .text('dibatalkan')
                   .newLine()
                   .style('B')
                   .text('THANK YOU')
@@ -336,9 +370,10 @@ const manualPrint = (sellingCode) => {
 
       const options = {
         encoding: "GB18030", /* default */
-        width: 48
+        width: 42
       };
-      const device = new escpos.USB();
+      // const device = new escpos.USB();
+      const device = new escpos.Network('192.168.1.222', 9100);
       const printer = new escpos.Printer(device, options);
       device.open((err) => {
         if (err) {
@@ -354,9 +389,9 @@ const manualPrint = (sellingCode) => {
             printer.image(image)
               .then(async () => {
                 printer
-                  .font('b')
+                  .font('a')
                 printer
-                  .size(0.1, 0.1)
+                  .size(0.5, 0.5)
                   .newLine()
                   .style('NORMAL')
                   .text(outletInfo.outlet_name)
@@ -365,7 +400,9 @@ const manualPrint = (sellingCode) => {
                   .text(outletInfo.outlet_phone)
                   .text(outletInfo.outlet_city)
                   .newLine()
+                  .style('B')
                   .text('INVOICE')
+                  .style('NORMAL')
                   .newLine()
                 if (itemList != false) {
                   for (let i = 0; i < itemList.length; i++) {
@@ -426,7 +463,7 @@ const manualPrint = (sellingCode) => {
                   )
                   .tableCustom(
                     [
-                      { text: '----------------------', align: "RIGHT", width: 0.5 }
+                      { text: '--------------------', align: "RIGHT", width: 0.5 }
                     ],
                     { size: [1, 1] } // Optional
                   )
@@ -453,21 +490,28 @@ const manualPrint = (sellingCode) => {
                   .style('NORMAL')
                   .tableCustom(
                     [
-                      { text: '----------------------', align: "RIGHT", width: 0.5 }
+                      { text: '--------------------', align: "RIGHT", width: 0.5 }
                     ],
                     { size: [1, 1] } // Optional
                   )
                 printer
-                  .size(1, 0.1)
-                  .text(`Kembali    ${currency(billInfo.retur)}`)
+                  .size(0.1, 0.2)
+                  .tableCustom(
+                    [
+                      { text: 'Kembali', align: "RIGHT", width: 0.3 },
+                      { text: currency(billInfo.retur), align: "RIGHT", width: 0.3 }
+                    ],
+                    { size: [1, 1] } // Optional
+                  )
                   .size(0, 0)
-                  .size(0.1, 0.1)
+                  .size(0.5, 0.5)
                   .style('B')
                   .drawLine()
                   .style('NORMAL')
                   .newLine()
                   .align('ct')
-                  .text('- Barang yang sudah dibeli tidak bisa dibatalkan')
+                  .text('- Barang yang sudah dibeli tidak bisa')
+                  .text('dibatalkan')
                   .newLine()
                   .style('B')
                   .text('THANK YOU')
@@ -476,6 +520,8 @@ const manualPrint = (sellingCode) => {
                   .newLine()
                   .align('rt')
                   .text(`${orderInfo.invoice_date} ${orderInfo.user}`)
+                  .newLine()
+                  .newLine()
                   .cut()
                   .flush()
                   .close()
